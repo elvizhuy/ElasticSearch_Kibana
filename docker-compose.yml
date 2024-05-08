@@ -155,6 +155,11 @@ services:
   # ============================ Metricbeate ==============================
 
   metricbeat01:
+    command: >
+      bash -c '
+        chown root:root /usr/share/metricbeat/metricbeat.yml;
+        /usr/local/bin/metricbeat -e -c /usr/share/metricbeat/metricbeat.yml;
+      '
     depends_on:
       es01:
         condition: service_healthy
@@ -180,6 +185,11 @@ services:
   # ===================================== Filebeat ============================================
 
   filebeat01:
+    command: >
+      bash -c '
+        chown root:root /usr/share/filebeat/filebeat.yml;
+        /usr/local/bin/filebeat -e -c /usr/share/filebeat/filebeat.yml;
+      '
     depends_on:
       es01:
         condition: service_healthy
