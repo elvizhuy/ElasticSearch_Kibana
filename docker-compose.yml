@@ -27,26 +27,20 @@ services:
     user: "0"
     command: >
       bash -c '
-        set -e  # Thoát ngay lập tức nếu một lệnh thất bại
-        if [ -z "${ELASTIC_PASSWORD}" ]; then
-          echo "ERROR: Set the ELASTIC_PASSWORD environment variable in the .env file"
-          exit 1
-        fi
-        if [ -z "${KIBANA_PASSWORD}" ]; then
-          echo "ERROR: Set the KIBANA_PASSWORD environment variable in the .env file"
-          exit 1
-        fi
-        CERTS_DIR="/usr/share/elasticsearch/config/certs"
-        CA_ZIP="${CERTS_DIR}/ca.zip"
-        CERTS_ZIP="${CERTS_DIR}/certs.zip"
-        INSTANCES_YML="${CERTS_DIR}/instances.yml"
-        if [ ! -f "${CA_ZIP}" ]; then
-          echo "Creating CA"
-          bin/elasticsearch-certutil ca --silent --pem -out "${CA_ZIP}"
-          unzip "${CA_ZIP}" -d "${CERTS_DIR}"
-        fi
-        if [ ! -f "${CERTS_ZIP}" ]; then
-          echo "Creating certs"
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
           echo -ne \
           "instances:\n"\
           "  - name: es01\n"\
@@ -61,21 +55,20 @@ services:
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
-          > "${INSTANCES_YML}"
-          bin/elasticsearch-certutil cert --silent --pem -out "${CERTS_ZIP}" --in "${INSTANCES_YML}" --ca-cert "${CERTS_DIR}/ca/ca.crt" --ca-key "${CERTS_DIR}/ca/ca.key"
-          unzip "${CERTS_ZIP}" -d "${CERTS_DIR}"
-        fi
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
         echo "Setting file permissions"
-        chown -R root:root "${CERTS_DIR}"
-        find "${CERTS_DIR}" -type d -exec chmod 750 {} \;
-        find "${CERTS_DIR}" -type f -exec chmod 640 {} \;
-        echo "Waiting for Elasticsearch availability"
-        until curl -s --cacert "${CERTS_DIR}/ca/ca.crt" https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done
-        echo "Setting kibana_system password"
-        until curl -s -X POST --cacert "${CERTS_DIR}/ca/ca.crt" -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done
-        echo "All done!"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
       '
-
     healthcheck:
       test: [ "CMD-SHELL", "[ -f config/certs/es01/es01.crt ]" ]
       interval: 1s
