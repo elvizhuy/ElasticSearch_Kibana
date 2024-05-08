@@ -2,7 +2,7 @@ filebeat.inputs:
 - type: filestream
 id: default-filestream
 paths:
-  - /usr/share/filebeat/logs/*.log
+  - ingest_data/*.log
 
 
 filebeat.autodiscover:
