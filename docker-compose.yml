@@ -27,7 +27,7 @@ services:
     user: "0"
     command: >
       bash -c '
-        set -e  # Exit immediately if a command fails
+        set -e  # Thoát ngay lập tức nếu một lệnh thất bại
         if [ -z "${ELASTIC_PASSWORD}" ]; then
           echo "ERROR: Set the ELASTIC_PASSWORD environment variable in the .env file"
           exit 1
