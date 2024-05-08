@@ -157,8 +157,9 @@ services:
   metricbeat01:
     command: >
       bash -c '
-        chown root:root /usr/share/metricbeat/metricbeat.yml;
-        /usr/local/bin/metricbeat -e -c /usr/share/metricbeat/metricbeat.yml;
+        cp /usr/share/metricbeat/metricbeat.yml /usr/share/metricbeat/metricbeat.tmp.yml;
+        chown root:root /usr/share/metricbeat/metricbeat.tmp.yml;
+        /usr/share/metricbeat/metricbeat -e -c /usr/share/metricbeat/metricbeat.tmp.yml;
       '
     depends_on:
       es01:
@@ -187,8 +188,9 @@ services:
   filebeat01:
     command: >
       bash -c '
-        chown root:root /usr/share/filebeat/filebeat.yml;
-        /usr/local/bin/filebeat -e -c /usr/share/filebeat/filebeat.yml;
+        cp /usr/share/filebeat/filebeat.yml /usr/share/filebeat/filebeat.tmp.yml;
+        chown root:root /usr/share/filebeat/filebeat.tmp.yml;
+        /usr/share/filebeat/filebeat -e -c /usr/share/filebeat/filebeat.tmp.yml;
       '
     depends_on:
       es01:
