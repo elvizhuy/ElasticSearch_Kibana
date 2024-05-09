@@ -153,7 +153,6 @@ services:
       retries: 120
 
   # ============================ Metricbeate ==============================
-
   metricbeat01:
     command: >
       bash -c '
